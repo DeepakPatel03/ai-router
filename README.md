@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Express](https://img.shields.io/badge/Express-5.x-lightgrey.svg)](https://expressjs.com/)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)]()
+[![Author](https://img.shields.io/badge/Author-DeepakPatel03-purple.svg)](https://github.com/DeepakPatel03)
 
 **AI Router** is an asynchronous reverse-proxy and protocol-adapting API gateway for AI-assisted development tools (Claude Code CLI, Cursor, VS Code, etc.). 
 
@@ -28,7 +29,7 @@ It aggregates multiple free, local, and cloud AI providers into a single unified
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/<your-username>/ai-router.git
+git clone https://github.com/DeepakPatel03/ai-router.git
 cd ai-router
 npm install
 ```
@@ -102,6 +103,11 @@ flowchart TD
     Cooldown --> Waterfall
     SSE --> Client
 ```
+
+---
+
+## 👨‍💻 Author & Maintainer
+- **Deepak Patel** ([@DeepakPatel03](https://github.com/DeepakPatel03))
 
 ---
 
