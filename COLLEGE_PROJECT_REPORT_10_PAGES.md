@@ -57,12 +57,12 @@ graph TD
     
     E --> F[Tier 1: High-Speed Free Cloud - Gemini]
     E --> G[Tier 2: Local Heavy Models - FreeLLM / OmniRoute]
-    E --> H[Tier 3: Specialized Cloud - OpenCode, Kiro, Nara, HF]
+    E --> H[Tier 3: Specialized Cloud - OpenCode, Kiro, HF]
     
     F -->|Success 200 OK| I[Schema Translator Anthropic <-> OpenAI]
     F -->|Fail 429/502/Timeout| G
     G -->|Fail| H
-    H -->|Fail| J[Emergency Fallback - GitHub Models / OpenRouter]
+    H -->|Fail| J[Emergency Fallbacks - AgentRouter / OpenRouter / GitHub Models]
     
     I -->|SSE Stream / JSON Payload| A
 ```

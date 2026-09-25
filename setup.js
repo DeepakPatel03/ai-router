@@ -48,13 +48,23 @@ async function runWizard() {
   console.log("   👉 Get it free at: https://opencode.ai/");
   const openCodeKey = await ask("   ? Enter OpenCode API Key (or press Enter to skip): ");
 
-  // 3. Nara Router Key
-  console.log("\n\x1b[33m%s\x1b[0m", "3️⃣  Nara Router Key (Optional - 6 Fast Models)");
-  console.log("   👉 Get it at: https://router.bynara.id/");
-  const naraKey = await ask("   ? Enter Nara API Key (or press Enter to skip): ");
+  // 3. Fallback #1: AgentRouter
+  console.log("\n\x1b[33m%s\x1b[0m", "3️⃣  Fallback #1: AgentRouter API Key (Optional — Claude Opus 4.8)");
+  console.log("   👉 Get it at: https://agentrouter.org/");
+  const agentRouterKey = await ask("   ? Enter AgentRouter API Key (or press Enter to skip): ");
 
-  // 4. Port configuration
-  console.log("\n\x1b[33m%s\x1b[0m", "4️⃣  Port Configuration");
+  // 4. Fallback #2: OpenRouter
+  console.log("\n\x1b[33m%s\x1b[0m", "4️⃣  Fallback #2: OpenRouter API Key (Optional — Nemotron Ultra Free)");
+  console.log("   👉 Get it at: https://openrouter.ai/");
+  const openRouterKey = await ask("   ? Enter OpenRouter API Key (or press Enter to skip): ");
+
+  // 5. Fallback #3: GitHub Models
+  console.log("\n\x1b[33m%s\x1b[0m", "5️⃣  Fallback #3: GitHub Models Token (Optional — GPT-4o Mini)");
+  console.log("   👉 Get it at: https://github.com/marketplace/models");
+  const githubKey = await ask("   ? Enter GitHub Token (or press Enter to skip): ");
+
+  // 6. Port configuration
+  console.log("\n\x1b[33m%s\x1b[0m", "6️⃣  Port Configuration");
   const portInput = await ask("   ? Enter Local Port [Default: 3000]: ");
   const chosenPort = portInput || "3000";
 
@@ -63,9 +73,8 @@ async function runWizard() {
 
   // Update or build .env
   let lines = envContent ? envContent.split("\n") : [];
-  let envMap = new Map();
 
-  // If .env doesn't exist, create full template with all 88+ providers
+  // If .env doesn't exist, create full template with all providers
   if (lines.length < 50) {
     // Generate fresh baseline .env
     lines = generateBaselineEnv();
@@ -97,18 +106,27 @@ async function runWizard() {
       if (line.startsWith("CUSTOM_74_KEY=")) return `CUSTOM_74_KEY=${openCodeKey}`;
     }
 
-    // Nara
-    if (naraKey) {
-      if (line.startsWith("CUSTOM_75_KEY=")) return `CUSTOM_75_KEY=${naraKey}`;
-      if (line.startsWith("CUSTOM_76_KEY=")) return `CUSTOM_76_KEY=${naraKey}`;
-      if (line.startsWith("CUSTOM_77_KEY=")) return `CUSTOM_77_KEY=${naraKey}`;
-      if (line.startsWith("CUSTOM_78_KEY=")) return `CUSTOM_78_KEY=${naraKey}`;
-      if (line.startsWith("CUSTOM_79_KEY=")) return `CUSTOM_79_KEY=${naraKey}`;
-      if (line.startsWith("CUSTOM_80_KEY=")) return `CUSTOM_80_KEY=${naraKey}`;
-    }
+    // Fallbacks if existing in file
+    if (agentRouterKey && line.startsWith("AGENTROUTER_API_KEY=")) return `AGENTROUTER_API_KEY=${agentRouterKey}`;
+    if (openRouterKey && line.startsWith("OPENROUTER_API_KEY=")) return `OPENROUTER_API_KEY=${openRouterKey}`;
+    if (githubKey && line.startsWith("GITHUB_API_KEY=")) return `GITHUB_API_KEY=${githubKey}`;
 
     return line;
   });
+
+  // Helper to ensure key is appended if not present
+  function upsertVar(arr, keyName, val) {
+    if (!val) return arr;
+    const exists = arr.some(l => l.startsWith(`${keyName}=`));
+    if (!exists) {
+      arr.push(`${keyName}=${val}`);
+    }
+    return arr;
+  }
+
+  updatedLines = upsertVar(updatedLines, "AGENTROUTER_API_KEY", agentRouterKey);
+  updatedLines = upsertVar(updatedLines, "OPENROUTER_API_KEY", openRouterKey);
+  updatedLines = upsertVar(updatedLines, "GITHUB_API_KEY", githubKey);
 
   fs.writeFileSync(ENV_PATH, updatedLines.join("\n"), "utf8");
 
@@ -120,9 +138,17 @@ async function runWizard() {
     keysCount++;
     activatedModels += 6;
   }
-  if (naraKey) {
+  if (agentRouterKey) {
     keysCount++;
-    activatedModels += 6;
+    activatedModels += 1;
+  }
+  if (openRouterKey) {
+    keysCount++;
+    activatedModels += 1;
+  }
+  if (githubKey) {
+    keysCount++;
+    activatedModels += 1;
   }
 
   // Check if OmniRoute/FreeLLM are present in .env
@@ -140,7 +166,9 @@ async function runWizard() {
   console.log(`   🟢 Activated: \x1b[1m${activatedModels} High-Speed Models\x1b[0m`);
   if (geminiKey) console.log(`      • Gemini Cloud: 5 Models (3.1 Pro, 2.5 Pro, 3.5 Flash, 3 Flash, 2.5 Flash)`);
   if (openCodeKey) console.log(`      • OpenCode: 6 Models (DeepSeek-V4, Mimo, Nemotron, Laguna, Ling, North)`);
-  if (naraKey) console.log(`      • Nara Router: 6 Models (Nemotron-Ultra, Tencent, Agnes, Mistral)`);
+  if (agentRouterKey) console.log(`      • Fallback #1: AgentRouter (Claude Opus 4.8)`);
+  if (openRouterKey) console.log(`      • Fallback #2: OpenRouter (Nemotron Ultra)`);
+  if (githubKey) console.log(`      • Fallback #3: GitHub Models (GPT-4o Mini)`);
   if (hasFreeLLM || hasOmni) console.log(`      • Local Services: FreeLLM & OmniRoute endpoints mapped`);
   if (skipped > 0) {
     console.log(`   🟡 Skipped: ${skipped} unconfigured models (Gracefully bypassed)`);

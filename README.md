@@ -70,8 +70,10 @@ npm run setup
 The interactive wizard will guide you through:
 1. **Google Gemini Free Key** (Unlocks 5 flagship Google models) — [Get free key here](https://aistudio.google.com/)
 2. **OpenCode Free Key** (Unlocks 6 coding models) — [Get free key here](https://opencode.ai/)
-3. **Nara Router Key** (Optional - 6 fast models) — [Get key here](https://router.bynara.id/)
-4. **Port Configuration** (Default: `3000`)
+3. **Fallback #1: AgentRouter Key** (Optional — Claude Opus 4.8) — [Get key here](https://agentrouter.org/)
+4. **Fallback #2: OpenRouter Key** (Optional — Nemotron Ultra Free) — [Get key here](https://openrouter.ai/)
+5. **Fallback #3: GitHub Models Token** (Optional — GPT-4o Mini) — [Get token here](https://github.com/marketplace/models)
+6. **Port Configuration** (Default: `3000`)
 
 > 💡 **Tip:** You can press **Enter** to skip any key you don't have yet. Even with just **1 free Gemini key**, you get 5 high-speed models activated immediately!
 > 
@@ -151,7 +153,7 @@ Add this to your `~/.continue/config.json`:
        │         └── [Fails / 429 Rate Limit / 5xx Error]
        │                   │
        │                   ├── Automatically triggers Circuit Breaker (15s - 300s cooldown)
-       │                   └── Instantly falls back to Tier 2 (OpenCode / Nara / Backup)
+       │                   └── Instantly falls back to Tier 2 (OpenCode / AgentRouter / OpenRouter / GitHub)
        ▼
 [Client receives 100% uninterrupted response with zero downtime!]
 ```

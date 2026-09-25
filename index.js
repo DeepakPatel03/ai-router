@@ -45,42 +45,43 @@ for (let i = 1; i <= 120; i++) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ⚠️  FALLBACK PROVIDERS — Last mein push (sirf jab sab free providers fail ho)
-// GitHub: 413 error deta hai bade context par, isliye last mein
-// OpenRouter/AgentRouter: Quota use hota hai, sirf emergency mein
+// ⚠️  FALLBACK PROVIDERS — (Sirf jab primary free providers fail ho)
+// Exact order: 1. AgentRouter -> 2. OpenRouter -> 3. GitHub Models
 // ═══════════════════════════════════════════════════════════════════════════════
-if (process.env.GITHUB_API_KEY) {
-  PROVIDERS.push({
-    name: "GitHub Models (Fallback)",
-    type: "openai",
-    url: "https://models.github.ai/inference/chat/completions",
-    key: process.env.GITHUB_API_KEY,
-    model: process.env.GITHUB_MODEL || "gpt-4o-mini",
-    extraHeaders: {},
-  });
-  console.log(`🔌 Fallback: GitHub Models [${process.env.GITHUB_MODEL || "gpt-4o-mini"}]`);
-}
-if (process.env.OPENROUTER_API_KEY) {
-  PROVIDERS.push({
-    name: "OpenRouter (Fallback)",
-    type: "openai",
-    url: "https://openrouter.ai/api/v1/chat/completions",
-    key: process.env.OPENROUTER_API_KEY,
-    model: process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free",
-    extraHeaders: { "HTTP-Referer": "http://localhost", "X-Title": "AI-Router" },
-  });
-  console.log(`🔌 Fallback: OpenRouter [${process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free"}]`);
-}
 if (process.env.AGENTROUTER_API_KEY) {
   PROVIDERS.push({
-    name: "AgentRouter (Last Resort)",
+    name: "AgentRouter (Fallback #1)",
     type: "anthropic",
     url: "https://agentrouter.org/v1/messages",
     key: process.env.AGENTROUTER_API_KEY,
     model: process.env.AGENTROUTER_MODEL || "claude-opus-4-8",
     extraHeaders: { "anthropic-version": "2023-06-01", "User-Agent": "claude-cli/1.0.0 (external, cli)" },
   });
-  console.log(`🔌 Last Resort: AgentRouter [${process.env.AGENTROUTER_MODEL || "claude-opus-4-8"}]`);
+  console.log(`🔌 Fallback #1: AgentRouter [${process.env.AGENTROUTER_MODEL || "claude-opus-4-8"}]`);
+}
+
+if (process.env.OPENROUTER_API_KEY) {
+  PROVIDERS.push({
+    name: "OpenRouter (Fallback #2)",
+    type: "openai",
+    url: "https://openrouter.ai/api/v1/chat/completions",
+    key: process.env.OPENROUTER_API_KEY,
+    model: process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free",
+    extraHeaders: { "HTTP-Referer": "http://localhost", "X-Title": "AI-Router" },
+  });
+  console.log(`🔌 Fallback #2: OpenRouter [${process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free"}]`);
+}
+
+if (process.env.GITHUB_API_KEY) {
+  PROVIDERS.push({
+    name: "GitHub Models (Fallback #3)",
+    type: "openai",
+    url: "https://models.github.ai/inference/chat/completions",
+    key: process.env.GITHUB_API_KEY,
+    model: process.env.GITHUB_MODEL || "gpt-4o-mini",
+    extraHeaders: {},
+  });
+  console.log(`🔌 Fallback #3: GitHub Models [${process.env.GITHUB_MODEL || "gpt-4o-mini"}]`);
 }
 
 
@@ -527,14 +528,14 @@ async function tryProviders(req, res) {
       let status = upstream.status;
 
       // Log initial 403 response
-      if (status === 403 && provider.name === "AgentRouter") {
+      if (status === 403 && provider.name.startsWith("AgentRouter")) {
         let errorMsg = wantsStream ? await streamToString(upstream.data) : JSON.stringify(upstream.data);
         console.log(`⚠️  AgentRouter returned 403 on initial try. Error Body: ${errorMsg}`);
       }
 
       // Smart fallback: Agar AgentRouter 403 deta hai (key doesn't support tools) aur tools passed hain
       // toh request ko bina tools ke retry karo so that text responses continue working.
-      if (status === 403 && provider.name === "AgentRouter" && payload.tools) {
+      if (status === 403 && provider.name.startsWith("AgentRouter") && payload.tools) {
         console.log(`⚠️  AgentRouter returned 403 (limit/tools). Retrying without tools...`);
         const { tools: _t, ...noToolsPayload } = payload;
         
@@ -681,7 +682,7 @@ app.post("/switch", express.json(), (req, res) => {
 // ── Update API Keys dynamically via Web Dashboard ────────────────────────────
 app.post("/api/save-keys", (req, res) => {
   try {
-    const { geminiKey, openCodeKey, naraKey } = req.body;
+    const { geminiKey, openCodeKey, agentRouterKey, openRouterKey, githubKey } = req.body;
     const envFile = path.join(__dirname, ".env");
     let content = fs.existsSync(envFile) ? fs.readFileSync(envFile, "utf8") : "";
     let lines = content.split("\n");
@@ -702,16 +703,28 @@ app.post("/api/save-keys", (req, res) => {
         if (line.startsWith("CUSTOM_73_KEY=")) return `CUSTOM_73_KEY=${openCodeKey}`;
         if (line.startsWith("CUSTOM_74_KEY=")) return `CUSTOM_74_KEY=${openCodeKey}`;
       }
-      if (naraKey) {
-        if (line.startsWith("CUSTOM_75_KEY=")) return `CUSTOM_75_KEY=${naraKey}`;
-        if (line.startsWith("CUSTOM_76_KEY=")) return `CUSTOM_76_KEY=${naraKey}`;
-        if (line.startsWith("CUSTOM_77_KEY=")) return `CUSTOM_77_KEY=${naraKey}`;
-        if (line.startsWith("CUSTOM_78_KEY=")) return `CUSTOM_78_KEY=${naraKey}`;
-        if (line.startsWith("CUSTOM_79_KEY=")) return `CUSTOM_79_KEY=${naraKey}`;
-        if (line.startsWith("CUSTOM_80_KEY=")) return `CUSTOM_80_KEY=${naraKey}`;
+      if (agentRouterKey) {
+        if (line.startsWith("AGENTROUTER_API_KEY=")) return `AGENTROUTER_API_KEY=${agentRouterKey}`;
+      }
+      if (openRouterKey) {
+        if (line.startsWith("OPENROUTER_API_KEY=")) return `OPENROUTER_API_KEY=${openRouterKey}`;
+      }
+      if (githubKey) {
+        if (line.startsWith("GITHUB_API_KEY=")) return `GITHUB_API_KEY=${githubKey}`;
       }
       return line;
     });
+
+    function upsertVar(arr, keyName, val) {
+      if (!val) return arr;
+      const exists = arr.some(l => l.startsWith(`${keyName}=`));
+      if (!exists) arr.push(`${keyName}=${val}`);
+      return arr;
+    }
+
+    lines = upsertVar(lines, "AGENTROUTER_API_KEY", agentRouterKey);
+    lines = upsertVar(lines, "OPENROUTER_API_KEY", openRouterKey);
+    lines = upsertVar(lines, "GITHUB_API_KEY", githubKey);
 
     fs.writeFileSync(envFile, lines.join("\n"), "utf8");
 
@@ -719,7 +732,9 @@ app.post("/api/save-keys", (req, res) => {
     PROVIDERS.forEach((p) => {
       if (geminiKey && (p.name.includes("Gemini") || p.name === "Gemini Direct")) p.key = geminiKey;
       if (openCodeKey && p.name.startsWith("OCode")) p.key = openCodeKey;
-      if (naraKey && p.name.startsWith("Nara")) p.key = naraKey;
+      if (agentRouterKey && p.name.startsWith("AgentRouter")) p.key = agentRouterKey;
+      if (openRouterKey && p.name.startsWith("OpenRouter")) p.key = openRouterKey;
+      if (githubKey && p.name.startsWith("GitHub")) p.key = githubKey;
     });
 
     console.log("🔑 API Keys updated dynamically via Dashboard!");
@@ -964,9 +979,21 @@ app.get("/", (_req, res) => {
       </div>
 
       <div class="form-group">
-        <label>Nara Router Key (6 fast models)</label>
-        <input type="password" id="keyNara" placeholder="sk-nry-..." />
-        <div class="form-hint">Get key from <a href="https://router.bynara.id/" target="_blank">Nara Router ↗</a></div>
+        <label>AgentRouter Key (Fallback #1 — Claude Opus 4.8)</label>
+        <input type="password" id="keyAgentRouter" placeholder="sk-paZT..." />
+        <div class="form-hint">Anthropic format fallback endpoint: <a href="https://agentrouter.org/" target="_blank">AgentRouter ↗</a></div>
+      </div>
+
+      <div class="form-group">
+        <label>OpenRouter Key (Fallback #2 — Nemotron Ultra Free)</label>
+        <input type="password" id="keyOpenRouter" placeholder="sk-or-v1-..." />
+        <div class="form-hint">Emergency backup endpoint: <a href="https://openrouter.ai/" target="_blank">OpenRouter ↗</a></div>
+      </div>
+
+      <div class="form-group">
+        <label>GitHub Models Key (Fallback #3 — GPT-4o Mini)</label>
+        <input type="password" id="keyGitHub" placeholder="ghp_..." />
+        <div class="form-hint">Free developer models: <a href="https://github.com/marketplace/models" target="_blank">GitHub Models ↗</a></div>
       </div>
 
       <div class="modal-actions">
@@ -1027,15 +1054,17 @@ app.get("/", (_req, res) => {
     }
 
     async function submitKeys() {
-      const geminiKey = document.getElementById('keyGemini').value.trim();
-      const openCodeKey = document.getElementById('keyOpenCode').value.trim();
-      const naraKey = document.getElementById('keyNara').value.trim();
+      const geminiKey = document.getElementById('keyGemini')?.value.trim() || '';
+      const openCodeKey = document.getElementById('keyOpenCode')?.value.trim() || '';
+      const agentRouterKey = document.getElementById('keyAgentRouter')?.value.trim() || '';
+      const openRouterKey = document.getElementById('keyOpenRouter')?.value.trim() || '';
+      const githubKey = document.getElementById('keyGitHub')?.value.trim() || '';
 
       try {
         const r = await fetch('/api/save-keys', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ geminiKey, openCodeKey, naraKey })
+          body: JSON.stringify({ geminiKey, openCodeKey, agentRouterKey, openRouterKey, githubKey })
         });
         const d = await r.json();
         if (d.ok) {
