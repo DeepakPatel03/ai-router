@@ -7,57 +7,94 @@
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)]()
 [![Author](https://img.shields.io/badge/Author-DeepakPatel03-purple.svg)](https://github.com/DeepakPatel03)
 
-**AI Router** is an asynchronous reverse-proxy and protocol-adapting API gateway for AI-assisted development tools (Claude Code CLI, Cursor, VS Code, etc.). 
+**AI Router** is an asynchronous reverse-proxy and protocol-adapting API gateway for AI developer tools (**Claude Code CLI**, **OpenCode**, **Cursor**, **VS Code Continue**, etc.). 
 
-It aggregates multiple free, local, and cloud AI providers into a single unified endpoint with **automated failover**, **exponential backoff circuit breaking**, and **real-time Server-Sent Events (SSE) streaming translation**.
-
----
-
-## ✨ Key Features
-
-- **🛡️ Autonomous Failover & Circuit Breaker:** If a provider hits HTTP 429 (rate-limit) or 5xx downtime, AI Router immediately routes to the next model with exponential backoff cooldown ($15\text{s}$ to $300\text{s}$).
-- **🔄 Real-time Protocol & SSE Stream Converter:** Bi-directionally translates between Anthropic Messages API and OpenAI Chat Completions specifications on-the-fly with zero buffer bloat.
-- **⚡ 1-Command Interactive Setup Wizard:** `npm run setup` walks you through adding your free keys (Gemini, OpenCode, Nara) and auto-creates a Windows Desktop shortcut.
-- **🎛️ Modern Web Dashboard:** Live status monitoring, provider health telemetry, model switching, dynamic key management, and 1-click model batching at `http://localhost:3000`.
-- **➕ Multi-Model Batch Addition:** Add multiple models from a single provider with a comma-separated list (e.g. `llama-3.3-70b, deepseek-r1, mixtral-8x7b`) in one click.
-- **🔒 Pinned Exclusive & Sticky Routing:** Locks onto working models during long coding sessions to prevent context fragmentation.
-- **⏱️ 10-Minute Extended Reasoning Timeout:** Allows deep-thinking models (DeepSeek R1, Nemotron Ultra) up to 600 seconds to generate complex codebases.
+It aggregates multiple free, cloud, and local AI providers into a single unified local endpoint with **automated failover**, **exponential backoff circuit breaking**, and **real-time Server-Sent Events (SSE) streaming translation**.
 
 ---
 
-## 🚀 Quickstart (Fresh PC Setup)
+## 📋 System Requirements (Prerequisites)
 
-### 1. Clone & Install Dependencies
+Before installing AI Router, make sure your computer has the following tools installed:
+
+| Requirement | Minimum Version | Download Link | Purpose |
+|---|---|---|---|
+| **Node.js** | `v18.0.0` or higher | [Download Node.js](https://nodejs.org/) | Backend runtime environment to run the router |
+| **Git** | Any recent version | [Download Git](https://git-scm.com/) | To clone the repository |
+| **Operating System** | Windows 10/11, macOS, or Linux | Built-in | Host OS (1-click `.vbs` and `.bat` scripts provided for Windows) |
+| **Internet Access** | Active connection | N/A | To communicate with cloud AI providers |
+
+### 🔍 How to Check if Requirements are Installed:
+Open your terminal (PowerShell, Command Prompt, or Terminal) and run:
+```bash
+node -v
+git --version
+```
+> If `node -v` prints `v18.x.x` (or higher) and Git prints its version, you are 100% ready!
+
+---
+
+## 🎯 Supported AI Tools & Clients
+
+AI Router acts as a drop-in replacement for any AI coding tool. You can use it with:
+1. **Claude Code CLI** (Anthropic's official agentic terminal assistant)
+2. **OpenCode** (Open-source developer terminal agent)
+3. **Cursor IDE** (AI-powered code editor)
+4. **VS Code** (with Continue.dev or Cline extension)
+5. **cURL / Python / OpenAI SDK** (Any custom HTTP client)
+
+---
+
+## 🚀 Step-by-Step Installation Guide (For Absolute Beginners)
+
+### Step 1: Clone the Repository
+Open your terminal and run:
 ```bash
 git clone https://github.com/DeepakPatel03/ai-router.git
 cd ai-router
+```
+
+### Step 2: Install Project Dependencies
+Run this command inside the `ai-router` folder:
+```bash
 npm install
 ```
+*(This installs Express, Axios, and Dotenv required by the router engine).*
 
-### 2. Run the Interactive Setup Wizard
+### Step 3: Run the 1-Click Interactive Setup Wizard
 ```bash
 npm run setup
-# Or double-click setup.bat on Windows
+# Or simply double-click setup.bat on Windows
 ```
-The wizard will:
-1. Ask for your free **Google Gemini** API key (Unlocks 5 flagship Google models).
-2. Ask for your free **OpenCode** API key (Unlocks 6 coding models).
-3. Automatically configure `.env`.
-4. Automatically create a **Desktop Shortcut** for the Web Dashboard.
 
-### 3. Start AI Router
+The interactive wizard will guide you through:
+1. **Google Gemini Free Key** (Unlocks 5 flagship Google models) — [Get free key here](https://aistudio.google.com/)
+2. **OpenCode Free Key** (Unlocks 6 coding models) — [Get free key here](https://opencode.ai/)
+3. **Nara Router Key** (Optional - 6 fast models) — [Get key here](https://router.bynara.id/)
+4. **Port Configuration** (Default: `3000`)
+
+> 💡 **Tip:** You can press **Enter** to skip any key you don't have yet. Even with just **1 free Gemini key**, you get 5 high-speed models activated immediately!
+> 
+> 🖥️ **Bonus:** The wizard automatically creates a desktop shortcut: **`AI Router Dashboard`** on your Windows Desktop!
+
+### Step 4: Start AI Router
 ```bash
 npm start
-# Or double-click START.vbs for silent background execution
+# Or double-click START.vbs for silent background execution without CMD windows!
 ```
-Dashboard opens at: **`http://localhost:3000`**
+Now open your browser and navigate to:  
+👉 **`http://localhost:3000`**
+
+You will see the live **AI Router Dashboard** showing all your active providers and health metrics!
 
 ---
 
-## 📡 Client Configuration
+## 📡 Connecting Your AI Tools (Claude Code, OpenCode, Cursor)
 
-### Claude Code CLI
-Add this to your `~/.claude/settings.json` (or `%USERPROFILE%\.claude\settings.json` on Windows):
+Once AI Router is running at `http://localhost:3000`, configure your favorite tool:
+
+### 1. Claude Code CLI Setup
+Open or create your Claude settings file at `~/.claude/settings.json` (on Windows: `C:\Users\<Your-Username>\.claude\settings.json`):
 ```json
 {
   "env": {
@@ -67,15 +104,75 @@ Add this to your `~/.claude/settings.json` (or `%USERPROFILE%\.claude\settings.j
   }
 }
 ```
+Now run `claude` in any project terminal. Claude Code will now use AI Router with zero rate-limit interruptions!
 
-### Cursor / VS Code / OpenAI Compatible Tools
-- **API Base URL:** `http://localhost:3000/v1`
-- **API Key:** `router-handles-this` (or any string)
-- **Model:** `auto` or any model ID from the dashboard
+### 2. Cursor IDE Setup
+1. Open Cursor Settings $\to$ **Models**.
+2. Enable **OpenAI API Key**.
+3. Set **Base URL** to: `http://localhost:3000/v1`
+4. Set **API Key** to: `router-handles-this`
+5. Set model name to `auto` or any model ID from the dashboard.
+
+### 3. VS Code (Continue.dev Extension) Setup
+Add this to your `~/.continue/config.json`:
+```json
+{
+  "models": [
+    {
+      "title": "AI Router",
+      "provider": "openai",
+      "model": "auto",
+      "apiBase": "http://localhost:3000/v1",
+      "apiKey": "router-handles-this"
+    }
+  ]
+}
+```
 
 ---
 
-## 🛠️ CLI Commands
+## 🧠 How AI Router Works Under the Hood
+
+```
+[Developer Tool] (Claude Code / OpenCode / Cursor)
+       │
+       │  (1) Sends standard prompt / message
+       ▼
+[AI Router Gateway] (http://localhost:3000)
+       │
+       ├──► (2) Session Check: Is a provider pinned? (Maintains session coherence)
+       │
+       ├──► (3) Protocol Translation: Converts Anthropic Messages schema ⟷ OpenAI format
+       │
+       ├──► (4) Priority Waterfall: Dispatches to Tier 1 (e.g. Gemini 3.1 Pro)
+       │         │
+       │         ├── [Success 200 OK] ──► Real-Time SSE Stream back to client
+       │         │
+       │         └── [Fails / 429 Rate Limit / 5xx Error]
+       │                   │
+       │                   ├── Automatically triggers Circuit Breaker (15s - 300s cooldown)
+       │                   └── Instantly falls back to Tier 2 (OpenCode / Nara / Backup)
+       ▼
+[Client receives 100% uninterrupted response with zero downtime!]
+```
+
+---
+
+## ✨ Standout Features
+
+- **🛡️ Autonomous Failover & Circuit Breaker:** When an API hits HTTP 429 (rate-limit) or server crashes, AI Router automatically shifts to the next best model with exponential backoff cooldown ($15\text{s}$ to $300\text{s}$).
+- **🔄 Real-time Protocol & SSE Stream Converter:** Bi-directionally translates between Anthropic Messages API and OpenAI Chat Completions specifications on-the-fly with zero buffer bloat.
+- **🎛️ Live Web Dashboard:** Open `http://localhost:3000` to monitor active models, switch providers, view real-time latency and success/fail counts.
+- **➕ 1-Click Multi-Model Batch Addition:** In the dashboard, you can add 5+ models from a single provider by typing comma-separated models (e.g. `llama-3.3-70b, deepseek-r1, mixtral-8x7b`).
+- **🔑 Dynamic Key Management:** Update API keys directly from the Web Dashboard without opening `.env` or restarting the server.
+- **🔒 Pinned Exclusive & Sticky Routing:** Locks onto working models during long coding sessions to prevent context drift and code style degradation.
+- **⏱️ 10-Minute Extended Reasoning Timeout:** Allows deep-thinking models (DeepSeek R1, Nemotron Ultra) up to 600 seconds to generate complex codebases.
+
+---
+
+## 🛠️ CLI Commands Cheat Sheet
+
+You can manage AI Router from your terminal using these built-in commands:
 
 ```bash
 ai-router start       # Start the AI Router gateway
@@ -86,23 +183,16 @@ ai-router status      # Check health probe and active provider count
 
 ---
 
-## 🏛️ System Architecture
+## ❓ Frequently Asked Questions (FAQ) & Troubleshooting
 
-```mermaid
-flowchart TD
-    Client["Client: Claude Code / Cursor"] -->|POST /v1/messages| Gateway["AI Router Gateway (Port 3000)"]
-    Gateway --> Pin{"Pinned / Sticky?"}
-    Pin -->|Yes| PinnedModel["Pinned Execution (3 Retries)"]
-    Pin -->|No| Waterfall["Waterfall Priority Array"]
-    Waterfall --> CD{"In Cooldown?"}
-    CD -->|Yes| Next["Skip to Next"]
-    CD -->|No| Translator["Anthropic ⟷ OpenAI Translator"]
-    Translator --> Dispatch["Upstream Request (Axios 600s)"]
-    Dispatch -->|200 OK| SSE["Real-Time SSE Stream Transform"]
-    Dispatch -->|429 / 5xx| Cooldown["Apply Cooldown (15s - 300s)"]
-    Cooldown --> Waterfall
-    SSE --> Client
-```
+#### Q: Port 3000 is already in use by another program. What should I do?
+Run `npm run setup` and specify a different port (e.g. `3005`). Then update your client's base URL to `http://localhost:3005`.
+
+#### Q: Do I need paid API keys to use this?
+**No!** AI Router is specifically designed to leverage free-tier quotas from Google Gemini and OpenCode AI. You can run powerful reasoning models completely free of cost.
+
+#### Q: How do I stop AI Router running in the background?
+On Windows, double-click **`STOP.vbs`**. It cleanly terminates background router processes on ports 3000 and 3001.
 
 ---
 
@@ -112,4 +202,4 @@ flowchart TD
 ---
 
 ## 📄 License
-This project is licensed under the [MIT License](LICENSE).
+This project is open-source software licensed under the [MIT License](LICENSE).
