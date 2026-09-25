@@ -133,6 +133,35 @@ Add this to your `~/.continue/config.json`:
 
 ---
 
+## 🧩 Adding Custom Providers & Models (Ollama, Groq, Together, DeepInfra, Mistral)
+
+AI Router is **100% extensible**. You or any user can easily plug in **any custom AI provider or model** of your choice through two flexible ways:
+
+### Method 1: Instant Web Dashboard (No restart needed!)
+1. Open the dashboard at `http://localhost:3000`.
+2. Click the **"➕ Add Custom Provider"** button in the header.
+3. Fill in the details:
+   - **Provider Name**: e.g., `Groq`, `Ollama Local`, `Together AI`
+   - **Model ID(s)**: e.g., `llama-3.3-70b-versatile`  
+     *(💡 **Batch Feature**: You can add multiple models at once using commas, e.g., `llama-3.3-70b, deepseek-r1, mixtral-8x7b`)*
+   - **API Endpoint URL**: e.g., `https://api.groq.com/openai/v1/chat/completions` or `http://localhost:11434/v1/chat/completions`
+   - **API Key / Token**: Provider key (or `ollama` for local)
+   - **Protocol Type**: `OpenAI Compatible` or `Anthropic Messages`
+4. Click **"✨ Add to AI Router"** — The models are instantly written to `.env` and loaded into the active routing queue immediately without restarting!
+
+### Method 2: Manual `.env` Configuration
+You can also add custom providers directly inside `.env`:
+```env
+CUSTOM_90_NAME=Groq Llama-3.3
+CUSTOM_90_KEY=gsk_your_api_key_here
+CUSTOM_90_URL=https://api.groq.com/openai/v1/chat/completions
+CUSTOM_90_MODEL=llama-3.3-70b-versatile
+CUSTOM_90_TYPE=openai
+```
+AI Router automatically scans and loads up to 120 custom slots (`CUSTOM_1` through `CUSTOM_120`)!
+
+---
+
 ## 🧠 How AI Router Works Under the Hood
 
 ```
